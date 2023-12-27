@@ -7,6 +7,7 @@ let gameInstance = (function () {
   let board = emptyBoard.map((row) => [...row]);
   let currentTurn = 'X';
   let gameState = 'idle';
+  let message = 'Click the board to start the game';
 
   let startGame = () => {
     gameState = 'playing';
@@ -15,7 +16,9 @@ let gameInstance = (function () {
 
     console.table(board);
 
-    return `Game started. Now it's ${currentTurn}'s turn`;
+    message = `Game started. Now it's ${currentTurn}'s turn`;
+
+    return;
   };
 
   let toggleTurn = () => {
@@ -38,9 +41,11 @@ let gameInstance = (function () {
       result = `The winner is ${winner}!`;
       if (winner == 'draw') result = 'The result is a draw!';
 
-      return `The game has ended. ${result}`;
+      message = `The game has ended. ${result}`;
+      return;
     }
-    return `Turn played. Now it's ${currentTurn}'s turn`;
+    message = `Turn played. Now it's ${currentTurn}'s turn`;
+    return;
   };
 
   let checkState = () => {
@@ -85,12 +90,60 @@ let gameInstance = (function () {
     return board;
   };
 
+  let getGameState = () => {
+    return gameState;
+  };
+
+  let getMessage = () => {
+    return message;
+  }
+
   return {
     startGame,
     playTurn,
     getBoard,
+    getGameState,
+    getMessage,
     checkState,
   };
 })();
 
-let gui = (function () {})();
+let gui = (function () {
+  let boardGui;
+  let messageGui;
+  let init = () => {
+    cacheDom();
+    bindEvents();
+    render();
+  }
+  let cacheDom = () => {
+    boardGui = document.querySelector('#board');
+    messageGui = document.querySelector('#message');
+  }
+  let bindEvents = () => {
+    boardGui.addEventListener('click', handleClick);
+  }
+  let handleClick = (e) => {
+    cell = e.target.closest('.cell');
+    position = cell.getAttribute('data-position');
+
+    switch(gameInstance.getGameState()){
+      case 'idle':
+      case 'ended':
+        gameInstance.startGame();
+        break;
+      case 'playing':
+        gameInstance.playTurn([position[0],position[1]])
+        break;
+    }
+
+    render();
+  }
+  let render = () => {
+    messageGui.innerHTML = gameInstance.getMessage();
+  }
+
+
+  init();
+
+})();
