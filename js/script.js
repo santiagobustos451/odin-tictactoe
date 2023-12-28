@@ -96,7 +96,11 @@ let gameInstance = (function () {
 
   let getMessage = () => {
     return message;
-  }
+  };
+
+  let getCurrentTurn = () => {
+    return currentTurn;
+  };
 
   return {
     startGame,
@@ -104,6 +108,7 @@ let gameInstance = (function () {
     getBoard,
     getGameState,
     getMessage,
+    getCurrentTurn,
     checkState,
   };
 })();
@@ -115,35 +120,76 @@ let gui = (function () {
     cacheDom();
     bindEvents();
     render();
-  }
+  };
   let cacheDom = () => {
     boardGui = document.querySelector('#board');
     messageGui = document.querySelector('#message');
-  }
+  };
   let bindEvents = () => {
     boardGui.addEventListener('click', handleClick);
-  }
+  };
   let handleClick = (e) => {
     cell = e.target.closest('.cell');
     position = cell.getAttribute('data-position');
 
-    switch(gameInstance.getGameState()){
+    switch (gameInstance.getGameState()) {
       case 'idle':
       case 'ended':
         gameInstance.startGame();
         break;
       case 'playing':
-        gameInstance.playTurn([position[0],position[1]])
+        gameInstance.playTurn([position[0], position[1]]);
         break;
     }
 
     render();
-  }
+  };
   let render = () => {
     messageGui.innerHTML = gameInstance.getMessage();
-  }
+    boardState = gameInstance.getBoard();
 
+    boardState.forEach((row, rowIndex) => {
+      row.forEach((position, colIndex) => {
+        cellGui = boardGui.querySelector(
+          `.cell[data-position="${rowIndex}${colIndex}"]`
+        );
+        cellValue = boardState[rowIndex][colIndex];
+        symbolX = cellGui.querySelector('.symbol-x');
+        symbolO = cellGui.querySelector('.symbol-o');
+
+        switch (cellValue) {
+          case '':
+            symbolX.classList.remove('set');
+            symbolO.classList.remove('set');
+            if (gameInstance.getGameState() == 'playing') {
+              console.log(gameInstance.getGameState());
+              if (gameInstance.getCurrentTurn() == 'X') {
+                symbolO.classList.add('unset');
+                symbolX.classList.remove('unset');
+              } else {
+                symbolX.classList.add('unset');
+                symbolO.classList.remove('unset');
+              }
+            } else {
+              symbolX.classList.remove('set');
+              symbolO.classList.remove('set');
+              symbolX.classList.add('unset');
+              symbolO.classList.add('unset');
+            }
+
+            break;
+          case 'X':
+            symbolX.classList.add('set');
+            symbolO.classList.add('unset');
+            break;
+          case 'O':
+            symbolO.classList.add('set');
+            symbolX.classList.add('unset');
+            break;
+        }
+      });
+    });
+  };
 
   init();
-
 })();
